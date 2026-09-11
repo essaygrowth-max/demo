@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+  <title>DemoApp · Admin Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    :root {
+      --primary: #6c5ce7;
+      --primary-dark: #4a3f9e;
+      --secondary: #fd79a8;
+      --sidebar-bg: #1e1e2d;
+      --sidebar-hover: #2a2a3d;
+      --bg: #f4f6fb;
+      --card-bg: #ffffff;
+      --text: #2d3436;
+      --text-light: #7f8c8d;
+      --border: #e9ecef;
+      --shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+      --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.1);
+      --radius: 16px;
+      --radius-sm: 10px;
+      --transition: all 0.25s cubic-bezier(0.2, 0.9, 0.4, 1);
+      --success: #00b894;
+      --danger: #d63031;
+      --warning: #fdcb6e;
+      --info: #0984e3;
+      --sidebar-width: 260px;
+      --bottom-nav-height: 64px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-thumb { background: #c5c9d6; border-radius: 10px; }
+
+    /* ========== LOGIN SCREEN ========== */
+    .login-screen {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 50%, #fd79a8 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 5000;
+      padding: 20px;
+    }
+
+    .login-card {
+      background: white;
+      border-radius: 24px;
+      padding: 36px 28px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.2);
+      animation: popIn 0.4s ease;
+    }
+
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(0.95) translateY(20px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .login-card .logo {
+      font-size: 1.8rem;
+      font-weight: 700;
+      text-align: center;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin-bottom: 6px;
+    }
+
+    .login-card .subtitle {
+      text-align: center;
+      color: var(--text-light);
+      font-size: 0.85rem;
+      margin-bottom: 26px;
+    }
+
+    .form-group { margin-bottom: 16px; }
+    .form-group label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 500;
+      margin-bottom: 6px;
+      color: var(--text-light);
+    }
+    .form-group input, .form-group textarea, .form-group select {
+      width: 100%;
+      padding: 13px 16px;
+      border-radius: 12px;
+      border: 1.5px solid var(--border);
+      font-family: inherit;
+      font-size: 0.9rem;
+      transition: var(--transition);
+      background: #fafbfc;
+    }
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: white;
+      box-shadow: 0 0 0 4px rgba(108, 92, 231, 0.1);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 13px 20px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      border: none;
+      cursor: pointer;
+      transition: var(--transition);
+      font-family: inherit;
+      text-decoration: none;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: white;
+      box-shadow: 0 8px 20px rgba(108, 92, 231, 0.25);
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 26px rgba(108, 92, 231, 0.35); }
+    .btn-block { width: 100%; }
+    .btn-sm { padding: 8px 14px; font-size: 0.8rem; border-radius: 10px; }
+    .btn-danger { background: var(--danger); color: white; }
+    .btn-danger:hover { background: #b02525; }
+    .btn-outline {
+      background: transparent;
+      border: 1.5px solid var(--border);
+      color: var(--text);
+    }
+    .btn-outline:hover { background: #f1f3f8; }
+
+    /* ========== LAYOUT ========== */
+    .admin-layout { display: none; }
+    .admin-layout.active { display: block; }
+
+    /* Sidebar */
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: var(--sidebar-width);
+      background: var(--sidebar-bg);
+      color: #cdd0e0;
+      padding: 22px 16px;
+      z-index: 1000;
+      transform: translateX(-100%);
+      transition: transform 0.3s ease;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar.open { transform: translateX(0); }
+
+    .sidebar-brand {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: white;
+      padding: 0 8px 22px;
+      border-bottom: 1px solid #33334a;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .sidebar-brand span {
+      background: linear-gradient(135deg, #a29bfe, #fd79a8);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .sidebar-close {
+      background: none;
+      border: none;
+      color: #8b8fa3;
+      font-size: 1.4rem;
+      cursor: pointer;
+      display: block;
+    }
+
+    .sidebar-nav { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 13px 16px;
+      border-radius: 12px;
+      color: #b0b4c9;
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: var(--transition);
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      font-family: inherit;
+      width: 100%;
+      text-align: left;
+    }
+
+    .sidebar-link i { width: 20px; text-align: center; font-size: 1rem; }
+
+    .sidebar-link:hover { background: var(--sidebar-hover); color: white; }
+
+    .sidebar-link.active {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: white;
+      box-shadow: 0 8px 18px rgba(108, 92, 231, 0.4);
+    }
+
+    .sidebar-footer { border-top: 1px solid #33334a; padding-top: 14px; margin-top: 14px; }
+
+    /* Overlay for mobile sidebar */
+    .sidebar-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 999;
+      display: none;
+      backdrop-filter: blur(2px);
+    }
+    .sidebar-overlay.show { display: block; }
+
+    /* Main content */
+    .main-content {
+      padding: 18px 16px 90px;
+      max-width: 1300px;
+      margin: 0 auto;
+    }
+
+    /* Topbar */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 22px;
+      gap: 12px;
+    }
+
+    .topbar-left { display: flex; align-items: center; gap: 14px; }
+
+    .menu-toggle {
+      background: white;
+      border: none;
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      font-size: 1.2rem;
+      color: var(--text);
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .menu-toggle:hover { color: var(--primary); }
+
+    .page-title { font-size: 1.35rem; font-weight: 700; }
+
+    .admin-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: white;
+      padding: 8px 14px;
+      border-radius: 30px;
+      box-shadow: var(--shadow);
+      font-size: 0.82rem;
+      font-weight: 500;
+    }
+    .admin-badge i { color: var(--success); }
+
+    /* Stats cards */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    @media (min-width: 700px) {
+      .stats-grid { grid-template-columns: repeat(4, 1fr); }
+    }
+
+    .stat-card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: var(--shadow);
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+
+    .stat-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      color: white;
+      margin-bottom: 12px;
+    }
+
+    .stat-value { font-size: 1.6rem; font-weight: 700; line-height: 1.1; }
+    .stat-label { font-size: 0.78rem; color: var(--text-light); font-weight: 500; margin-top: 4px; }
+
+    /* Sections */
+    .admin-section { display: none; animation: fadeIn 0.3s ease; }
+    .admin-section.active { display: block; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .section-header h2 { font-size: 1.15rem; font-weight: 700; }
+
+    /* Card */
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    /* Table */
+    .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 700px;
+      font-size: 0.85rem;
+    }
+
+    thead {
+      background: #f7f8fc;
+      position: sticky;
+      top: 0;
+    }
+
+    th {
+      text-align: left;
+      padding: 14px 16px;
+      font-weight: 600;
+      color: var(--text-light);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 14px 16px;
+      border-top: 1px solid var(--border);
+      vertical-align: middle;
+      color: var(--text);
+    }
+
+    tbody tr { transition: var(--transition); }
+    tbody tr:hover { background: #fafbff; }
+
+    .table-img {
+      width: 46px;
+      height: 46px;
+      border-radius: 10px;
+      object-fit: cover;
+      background: #f0f2f5;
+    }
+
+    .table-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+
+    .icon-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 9px;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      transition: var(--transition);
+      background: #f1f3f8;
+      color: var(--text);
+    }
+    .icon-btn:hover { transform: translateY(-2px); }
+    .icon-btn.edit:hover { background: var(--info); color: white; }
+    .icon-btn.delete:hover { background: var(--danger); color: white; }
+    .icon-btn.view:hover { background: var(--primary); color: white; }
+
+    /* Status dropdown */
+    .status-select {
+      padding: 8px 12px;
+      border-radius: 10px;
+      border: 1.5px solid var(--border);
+      font-family: inherit;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      background: white;
+      transition: var(--transition);
+    }
+    .status-select:focus { outline: none; border-color: var(--primary); }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 50px 20px;
+      color: var(--text-light);
+    }
+    .empty-state i { font-size: 3rem; margin-bottom: 14px; opacity: 0.25; }
+
+    /* Modals */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      padding: 16px;
+    }
+    .modal-overlay.show { display: flex; }
+
+    .modal-content {
+      background: white;
+      border-radius: var(--radius);
+      max-width: 480px;
+      width: 100%;
+      max-height: 88vh;
+      overflow-y: auto;
+      padding: 26px;
+      box-shadow: var(--shadow-lg);
+      animation: modalPop 0.25s ease;
+      position: relative;
+    }
+
+    @keyframes modalPop {
+      from { opacity: 0; transform: scale(0.95) translateY(10px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 14px;
+      right: 18px;
+      font-size: 1.6rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-light);
+      line-height: 1;
+      transition: var(--transition);
+    }
+    .modal-close:hover { color: var(--danger); transform: rotate(90deg); }
+
+    .modal-content h3 { margin-bottom: 20px; font-size: 1.15rem; }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 90px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #2d3436;
+      color: white;
+      padding: 13px 24px;
+      border-radius: 50px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      opacity: 0;
+      transition: var(--transition);
+      z-index: 4000;
+      box-shadow: var(--shadow-lg);
+      pointer-events: none;
+      max-width: 90vw;
+      text-align: center;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* Bottom nav (mobile) */
+    .admin-bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: var(--bottom-nav-height);
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.06);
+      border-top: 1px solid var(--border);
+      z-index: 1000;
+      padding: 0 6px;
+    }
+
+    .admin-nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      font-size: 0.65rem;
+      font-weight: 500;
+      color: var(--text-light);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 6px 8px;
+      border-radius: 12px;
+      transition: var(--transition);
+      font-family: inherit;
+      flex: 1;
+    }
+    .admin-nav-item i { font-size: 1.2rem; }
+    .admin-nav-item.active { color: var(--primary); }
+
+    /* Toast confirm */
+    .confirm-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 3000;
+      padding: 20px;
+    }
+    .confirm-overlay.show { display: flex; }
+
+    .confirm-box {
+      background: white;
+      border-radius: var(--radius);
+      padding: 26px;
+      max-width: 360px;
+      width: 100%;
+      text-align: center;
+      box-shadow: var(--shadow-lg);
+      animation: modalPop 0.25s ease;
+    }
+    .confirm-box i { font-size: 2.4rem; color: var(--warning); margin-bottom: 12px; }
+    .confirm-box h4 { margin-bottom: 6px; }
+    .confirm-box p { color: var(--text-light); font-size: 0.85rem; margin-bottom: 20px; }
+    .confirm-actions { display: flex; gap: 10px; }
+    .confirm-actions .btn { flex: 1; }
+
+    /* Message cards */
+    .message-card {
+      background: white;
+      border-radius: var(--radius-sm);
+      padding: 18px;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow);
+      border-left: 4px solid var(--primary);
+    }
+    .message-card .msg-head {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+    .message-card .msg-name { font-weight: 600; }
+    .message-card .msg-email { color: var(--primary); font-size: 0.82rem; }
+    .message-card .msg-date { color: var(--text-light); font-size: 0.75rem; }
+    .message-card .msg-body { color: var(--text-light); font-size: 0.88rem; line-height: 1.6; }
+
+    /* Slider preview grid */
+    .slider-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 14px;
+    }
+    .slider-item {
+      background: white;
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      transition: var(--transition);
+    }
+    .slider-item:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+    .slider-item img { width: 100%; aspect-ratio: 16/9; object-fit: cover; background: #f0f2f5; }
+    .slider-item-info { padding: 10px; }
+    .slider-item-info p { font-size: 0.72rem; color: var(--text-light); word-break: break-all; margin-bottom: 8px; }
+
+    /* Responsive */
+    @media (min-width: 1024px) {
+      .sidebar {
+        transform: translateX(0);
+      }
+      .sidebar-close { display: none; }
+      .main-content {
+        margin-left: var(--sidebar-width);
+        padding: 28px 32px 40px;
+      }
+      .menu-toggle { display: none; }
+      .admin-bottom-nav { display: none; }
+      body { padding-bottom: 0; }
+      .toast { bottom: 30px; }
+    }
+
+    @media (max-width: 480px) {
+      .stats-grid { gap: 10px; }
+      .stat-card { padding: 14px; }
+      .stat-value { font-size: 1.35rem; }
+      .stat-icon { width: 38px; height: 38px; font-size: 0.95rem; }
+      .page-title { font-size: 1.1rem; }
+      .main-content { padding: 14px 12px 88px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ========== LOGIN SCREEN ========== -->
+  <div class="login-screen" id="loginScreen">
+    <div class="login-card">
+      <div class="logo">DemoApp Admin</div>
+      <p class="subtitle">Sign in to manage your store</p>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="adminEmail" placeholder="admin@demoapp.com">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="adminPassword" placeholder="••••••••">
+      </div>
+      <button class="btn btn-primary btn-block" onclick="adminLogin()">
+        <i class="fas fa-sign-in-alt"></i> Login
+      </button>
+    </div>
+  </div>
+
+  <!-- ========== ADMIN LAYOUT ========== -->
+  <div class="admin-layout" id="adminLayout">
+
+    <!-- Sidebar overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <span>DemoApp</span>
+        <button class="sidebar-close" onclick="toggleSidebar()"><i class="fas fa-times"></i></button>
+      </div>
+      <nav class="sidebar-nav">
+        <button class="sidebar-link active" data-section="dashboard" onclick="switchSection('dashboard')">
+          <i class="fas fa-chart-pie"></i> Dashboard
+        </button>
+        <button class="sidebar-link" data-section="products" onclick="switchSection('products')">
+          <i class="fas fa-box"></i> Products
+        </button>
+        <button class="sidebar-link" data-section="orders" onclick="switchSection('orders')">
+          <i class="fas fa-shopping-cart"></i> Orders
+        </button>
+        <button class="sidebar-link" data-section="slider" onclick="switchSection('slider')">
+          <i class="fas fa-images"></i> Slider
+        </button>
+        <button class="sidebar-link" data-section="messages" onclick="switchSection('messages')">
+          <i class="fas fa-envelope"></i> Messages
+        </button>
+      </nav>
+      <div class="sidebar-footer">
+        <button class="sidebar-link" onclick="adminLogout()">
+          <i class="fas fa-sign-out-alt"></i> Logout
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main content -->
+    <main class="main-content">
+
+      <!-- Topbar -->
+      <div class="topbar">
+        <div class="topbar-left">
+          <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+          <h1 class="page-title" id="pageTitle">Dashboard</h1>
+        </div>
+        <div class="admin-badge">
+          <i class="fas fa-circle"></i>
+          <span id="adminEmailDisplay">Admin</span>
+        </div>
+      </div>
+
+      <!-- ===== DASHBOARD ===== -->
+      <section class="admin-section active" id="section-dashboard">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon" style="background:linear-gradient(135deg,#6c5ce7,#a29bfe);"><i class="fas fa-box"></i></div>
+            <div class="stat-value" id="statProducts">0</div>
+            <div class="stat-label">Total Products</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:linear-gradient(135deg,#00b894,#55efc4);"><i class="fas fa-shopping-cart"></i></div>
+            <div class="stat-value" id="statOrders">0</div>
+            <div class="stat-label">Total Orders</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:linear-gradient(135deg,#0984e3,#74b9ff);"><i class="fas fa-users"></i></div>
+            <div class="stat-value" id="statUsers">0</div>
+            <div class="stat-label">Total Users</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:linear-gradient(135deg,#fd79a8,#e84393);"><i class="fas fa-envelope"></i></div>
+            <div class="stat-value" id="statMessages">0</div>
+            <div class="stat-label">Total Messages</div>
+          </div>
+        </div>
+
+        <div class="card" style="padding:22px;">
+          <h2 style="font-size:1.05rem;margin-bottom:10px;">Welcome back 👋</h2>
+          <p style="color:var(--text-light);font-size:0.88rem;line-height:1.7;">
+            Manage your DemoApp store from this dashboard. Add products, track orders,
+            update the hero slider, and read customer messages — all in real time.
+          </p>
+        </div>
+      </section>
+
+      <!-- ===== PRODUCTS ===== -->
+      <section class="admin-section" id="section-products">
+        <div class="section-header">
+          <h2>Products</h2>
+          <button class="btn btn-primary btn-sm" onclick="openProductModal()">
+            <i class="fas fa-plus"></i> Add Product
+          </button>
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Image</th>
+                  <th>Name</th>
+                  <th>Category</th>
+                  <th>Price</th>
+                  <th>Description</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="productsTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== ORDERS ===== -->
+      <section class="admin-section" id="section-orders">
+        <div class="section-header">
+          <h2>Orders</h2>
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Order ID</th>
+                  <th>Customer</th>
+                  <th>Phone</th>
+                  <th>Email</th>
+                  <th>Address</th>
+                  <th>Date</th>
+                  <th>Total</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="ordersTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== SLIDER ===== -->
+      <section class="admin-section" id="section-slider">
+        <div class="section-header">
+          <h2>Slider Images</h2>
+          <button class="btn btn-primary btn-sm" onclick="openSliderModal()">
+            <i class="fas fa-plus"></i> Add Image
+          </button>
+        </div>
+        <div class="slider-grid" id="sliderGrid"></div>
+      </section>
+
+      <!-- ===== MESSAGES ===== -->
+      <section class="admin-section" id="section-messages">
+        <div class="section-header">
+          <h2>Messages</h2>
+        </div>
+        <div id="messagesList"></div>
+      </section>
+
+    </main>
+
+    <!-- Bottom nav (mobile) -->
+    <nav class="admin-bottom-nav">
+      <button class="admin-nav-item active" data-section="dashboard" onclick="switchSection('dashboard')">
+        <i class="fas fa-chart-pie"></i><span>Home</span>
+      </button>
+      <button class="admin-nav-item" data-section="products" onclick="switchSection('products')">
+        <i class="fas fa-box"></i><span>Products</span>
+      </button>
+      <button class="admin-nav-item" data-section="orders" onclick="switchSection('orders')">
+        <i class="fas fa-shopping-cart"></i><span>Orders</span>
+      </button>
+      <button class="admin-nav-item" data-section="slider" onclick="switchSection('slider')">
+        <i class="fas fa-images"></i><span>Slider</span>
+      </button>
+      <button class="admin-nav-item" data-section="messages" onclick="switchSection('messages')">
+        <i class="fas fa-envelope"></i><span>Messages</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- ========== PRODUCT MODAL ========== -->
+  <div class="modal-overlay" id="productModal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeModal('productModal')">&times;</button>
+      <h3 id="productModalTitle">Add Product</h3>
+      <input type="hidden" id="productId">
+      <div class="form-group"><label>Name</label><input type="text" id="prodName"></div>
+      <div class="form-group"><label>Category</label><input type="text" id="prodCategory"></div>
+      <div class="form-group"><label>Price</label><input type="number" id="prodPrice" step="0.01"></div>
+      <div class="form-group"><label>Description</label><textarea id="prodDescription" rows="3"></textarea></div>
+      <div class="form-group"><label>Image URL</label><input type="url" id="prodImageUrl" placeholder="https://..."></div>
+      <button class="btn btn-primary btn-block" onclick="saveProduct()">Save Product</button>
+    </div>
+  </div>
+
+  <!-- ========== SLIDER MODAL ========== -->
+  <div class="modal-overlay" id="sliderModal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeModal('sliderModal')">&times;</button>
+      <h3>Add Slider Image</h3>
+      <div class="form-group"><label>Image URL</label><input type="url" id="sliderImageUrl" placeholder="https://..."></div>
+      <button class="btn btn-primary btn-block" onclick="saveSliderImage()">Add Image</button>
+    </div>
+  </div>
+
+  <!-- ========== CONFIRM DIALOG ========== -->
+  <div class="confirm-overlay" id="confirmOverlay">
+    <div class="confirm-box">
+      <i class="fas fa-exclamation-triangle"></i>
+      <h4 id="confirmTitle">Are you sure?</h4>
+      <p id="confirmMessage">This action cannot be undone.</p>
+      <div class="confirm-actions">
+        <button class="btn btn-outline" onclick="closeConfirm()">Cancel</button>
+        <button class="btn btn-danger" id="confirmBtn">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== TOAST ========== -->
+  <div class="toast" id="toast"></div>
+
+  <!-- ========== FIREBASE ========== -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
+      from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+    import { getDatabase, ref, set, push, onValue, remove, update, get, child }
+      from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCt1gGgDVnYB_2l5shWtHTEN3bx2AtEVaw",
+      authDomain: "fir-f303f.firebaseapp.com",
+      databaseURL: "https://fir-f303f-default-rtdb.firebaseio.com",
+      projectId: "fir-f303f",
+      storageBucket: "fir-f303f.firebasestorage.app",
+      messagingSenderId: "276245006082",
+      appId: "1:276245006082:web:21a46f3825ef7c24c9241b"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+
+    // ===== STATE =====
+    let products = {};
+    let orders = {};
+    let usersCount = 0;
+    let messages = {};
+
+    // ===== DOM =====
+    const loginScreen = document.getElementById('loginScreen');
+    const adminLayout = document.getElementById('adminLayout');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    const adminEmailDisplay = document.getElementById('adminEmailDisplay');
+    const pageTitle = document.getElementById('pageTitle');
+
+    // ===== UTILS =====
+    window.showToast = (msg, duration = 2500) => {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      clearTimeout(t._timer);
+      t._timer = setTimeout(() => t.classList.remove('show'), duration);
+    };
+
+    window.closeModal = (id) => document.getElementById(id).classList.remove('show');
+
+    let confirmCallback = null;
+    window.showConfirm = (title, message, callback) => {
+      document.getElementById('confirmTitle').textContent = title;
+      document.getElementById('confirmMessage').textContent = message;
+      confirmCallback = callback;
+      document.getElementById('confirmOverlay').classList.add('show');
+    };
+    window.closeConfirm = () => {
+      document.getElementById('confirmOverlay').classList.remove('show');
+      confirmCallback = null;
+    };
+    document.getElementById('confirmBtn').onclick = () => {
+      if (confirmCallback) confirmCallback();
+      closeConfirm();
+    };
+
+    // ===== SIDEBAR =====
+    window.toggleSidebar = () => {
+      sidebar.classList.toggle('open');
+      sidebarOverlay.classList.toggle('show');
+    };
+
+    // ===== NAVIGATION =====
+    window.switchSection = (section) => {
+      document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+      document.getElementById('section-' + section).classList.add('active');
+      document.querySelectorAll('.sidebar-link').forEach(l => {
+        l.classList.toggle('active', l.dataset.section === section);
+      });
+      document.querySelectorAll('.admin-nav-item').forEach(l => {
+        l.classList.toggle('active', l.dataset.section === section);
+      });
+      const titles = { dashboard: 'Dashboard', products: 'Products', orders: 'Orders', slider: 'Slider', messages: 'Messages' };
+      pageTitle.textContent = titles[section] || 'Dashboard';
+      if (window.innerWidth < 1024) {
+        sidebar.classList.remove('open');
+        sidebarOverlay.classList.remove('show');
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    // ===== AUTH =====
+    window.adminLogin = async () => {
+      const email = document.getElementById('adminEmail').value.trim();
+      const pass = document.getElementById('adminPassword').value;
+      if (!email || !pass) return showToast('Please enter email and password');
+      try {
+        await signInWithEmailAndPassword(auth, email, pass);
+        showToast('Welcome, admin');
+      } catch (e) {
+        showToast(e.message);
+      }
+    };
+
+    window.adminLogout = async () => {
+      await signOut(auth);
+      showToast('Logged out');
+    };
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        loginScreen.style.display = 'none';
+        adminLayout.classList.add('active');
+        adminEmailDisplay.textContent = user.email;
+        initDataListeners();
+      } else {
+        loginScreen.style.display = 'flex';
+        adminLayout.classList.remove('active');
+      }
+    });
+
+    // ===== DATA LISTENERS =====
+    let listenersAttached = false;
+    function initDataListeners() {
+      if (listenersAttached) return;
+      listenersAttached = true;
+
+      // Products
+      onValue(ref(db, 'products'), (snap) => {
+        products = snap.val() || {};
+        renderProductsTable();
+        document.getElementById('statProducts').textContent = Object.keys(products).length;
+      });
+
+      // Orders (all users)
+      onValue(ref(db, 'orders'), (snap) => {
+        orders = snap.val() || {};
+        renderOrdersTable();
+        let count = 0;
+        Object.values(orders).forEach(u => { count += Object.keys(u).length; });
+        document.getElementById('statOrders').textContent = count;
+      });
+
+      // Users
+      onValue(ref(db, 'users'), (snap) => {
+        const u = snap.val() || {};
+        usersCount = Object.keys(u).length;
+        document.getElementById('statUsers').textContent = usersCount;
+      });
+
+      // Messages
+      onValue(ref(db, 'messages'), (snap) => {
+        messages = snap.val() || {};
+        renderMessages();
+        document.getElementById('statMessages').textContent = Object.keys(messages).length;
+      });
+
+      // Slider images
+      onValue(ref(db, 'sliderImages'), (snap) => {
+        renderSliderGrid(snap.val() || {});
+      });
+    }
+
+    // ===== PRODUCTS =====
+    function renderProductsTable() {
+      const tbody = document.getElementById('productsTable');
+      const list = Object.entries(products);
+      if (list.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><i class="fas fa-box-open"></i><p>No products yet</p></div></td></tr>';
+        return;
+      }
+      tbody.innerHTML = list.map(([id, p]) => `
+        <tr>
+          <td><img class="table-img" src="${p.imageUrl || 'https://via.placeholder.com/60'}" alt=""></td>
+          <td><strong>${p.name || ''}</strong></td>
+          <td>${p.category || '—'}</td>
+          <td>$${Number(p.price || 0).toFixed(2)}</td>
+          <td style="max-width:200px;color:var(--text-light);font-size:0.8rem;">${(p.description || '').slice(0, 60)}${(p.description||'').length>60?'…':''}</td>
+          <td>
+            <div class="table-actions">
+              <button class="icon-btn edit" onclick="openProductModal('${id}')" title="Edit"><i class="fas fa-pen"></i></button>
+              <button class="icon-btn delete" onclick="deleteProduct('${id}')" title="Delete"><i class="fas fa-trash"></i></button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    window.openProductModal = (id) => {
+      document.getElementById('productModalTitle').textContent = id ? 'Edit Product' : 'Add Product';
+      if (id && products[id]) {
+        const p = products[id];
+        document.getElementById('productId').value = id;
+        document.getElementById('prodName').value = p.name || '';
+        document.getElementById('prodCategory').value = p.category || '';
+        document.getElementById('prodPrice').value = p.price || '';
+        document.getElementById('prodDescription').value = p.description || '';
+        document.getElementById('prodImageUrl').value = p.imageUrl || '';
+      } else {
+        document.getElementById('productId').value = '';
+        document.getElementById('prodName').value = '';
+        document.getElementById('prodCategory').value = '';
+        document.getElementById('prodPrice').value = '';
+        document.getElementById('prodDescription').value = '';
+        document.getElementById('prodImageUrl').value = '';
+      }
+      document.getElementById('productModal').classList.add('show');
+    };
+
+    window.saveProduct = async () => {
+      const id = document.getElementById('productId').value;
+      const data = {
+        name: document.getElementById('prodName').value.trim(),
+        category: document.getElementById('prodCategory').value.trim(),
+        price: parseFloat(document.getElementById('prodPrice').value) || 0,
+        description: document.getElementById('prodDescription').value.trim(),
+        imageUrl: document.getElementById('prodImageUrl').value.trim()
+      };
+      if (!data.name) return showToast('Product name is required');
+      try {
+        if (id) {
+          await update(ref(db, 'products/' + id), data);
+          showToast('Product updated');
+        } else {
+          await push(ref(db, 'products'), data);
+          showToast('Product added');
+        }
+        closeModal('productModal');
+      } catch (e) { showToast(e.message); }
+    };
+
+    window.deleteProduct = (id) => {
+      showConfirm('Delete Product', 'This product will be permanently removed.', () => {
+        remove(ref(db, 'products/' + id))
+          .then(() => showToast('Product deleted'))
+          .catch(e => showToast(e.message));
+      });
+    };
+
+    // ===== ORDERS =====
+    function renderOrdersTable() {
+      const tbody = document.getElementById('ordersTable');
+      const rows = [];
+      Object.entries(orders).forEach(([userId, userOrders]) => {
+        Object.entries(userOrders).forEach(([orderId, o]) => {
+          rows.push({ userId, orderId, ...o });
+        });
+      });
+      if (rows.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9"><div class="empty-state"><i class="fas fa-shopping-cart"></i><p>No orders yet</p></div></td></tr>';
+        return;
+      }
+      rows.sort((a, b) => (b.date || 0) - (a.date || 0));
+      const statuses = ['Pending', 'Confirmed', 'Preparing', 'Shipped', 'Delivered', 'Cancelled'];
+      tbody.innerHTML = rows.map(o => `
+        <tr>
+          <td><strong>#${(o.orderId || '').slice(-8)}</strong></td>
+          <td>${o.username || '—'}</td>
+          <td>${o.phoneNumber || '—'}</td>
+          <td style="font-size:0.78rem;">${o.userEmail || '—'}</td>
+          <td style="max-width:180px;font-size:0.78rem;color:var(--text-light);">${o.shippingAddress || '—'}</td>
+          <td style="white-space:nowrap;">${o.date ? new Date(o.date).toLocaleDateString() : '—'}</td>
+          <td><strong>$${Number(o.totalAmount || 0).toFixed(2)}</strong></td>
+          <td>
+            <select class="status-select" onchange="updateOrderStatus('${o.userId}','${o.orderId}', this.value)">
+              ${statuses.map(s => `<option value="${s}" ${o.status === s ? 'selected' : ''}>${s}</option>`).join('')}
+            </select>
+          </td>
+          <td>
+            <div class="table-actions">
+              <button class="icon-btn delete" onclick="deleteOrder('${o.userId}','${o.orderId}')" title="Delete"><i class="fas fa-trash"></i></button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    window.updateOrderStatus = (userId, orderId, status) => {
+      update(ref(db, `orders/${userId}/${orderId}`), { status })
+        .then(() => showToast('Status updated'))
+        .catch(e => showToast(e.message));
+    };
+
+    window.deleteOrder = (userId, orderId) => {
+      showConfirm('Delete Order', 'This order will be permanently removed.', () => {
+        remove(ref(db, `orders/${userId}/${orderId}`))
+          .then(() => showToast('Order deleted'))
+          .catch(e => showToast(e.message));
+      });
+    };
+
+    // ===== SLIDER =====
+    function renderSliderGrid(data) {
+      const grid = document.getElementById('sliderGrid');
+      const list = Object.entries(data);
+      if (list.length === 0) {
+        grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><i class="fas fa-images"></i><p>No slider images yet</p></div>';
+        return;
+      }
+      grid.innerHTML = list.map(([id, item]) => `
+        <div class="slider-item">
+          <img src="${item.downloadURL || ''}" alt="">
+          <div class="slider-item-info">
+            <p>${item.downloadURL || ''}</p>
+            <button class="btn btn-danger btn-sm btn-block" onclick="deleteSliderImage('${id}')">
+              <i class="fas fa-trash"></i> Delete
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    window.openSliderModal = () => {
+      document.getElementById('sliderImageUrl').value = '';
+      document.getElementById('sliderModal').classList.add('show');
+    };
+
+    window.saveSliderImage = async () => {
+      const url = document.getElementById('sliderImageUrl').value.trim();
+      if (!url) return showToast('Image URL is required');
+      try {
+        await push(ref(db, 'sliderImages'), { downloadURL: url });
+        showToast('Slider image added');
+        closeModal('sliderModal');
+      } catch (e) { showToast(e.message); }
+    };
+
+    window.deleteSliderImage = (id) => {
+      showConfirm('Delete Slider Image', 'This image will be removed from the slider.', () => {
+        remove(ref(db, 'sliderImages/' + id))
+          .then(() => showToast('Image deleted'))
+          .catch(e => showToast(e.message));
+      });
+    };
+
+    // ===== MESSAGES =====
+    function renderMessages() {
+      const container = document.getElementById('messagesList');
+      const list = Object.entries(messages);
+      if (list.length === 0) {
+        container.innerHTML = '<div class="card"><div class="empty-state"><i class="fas fa-envelope-open"></i><p>No messages yet</p></div></div>';
+        return;
+      }
+      list.sort((a, b) => (b[1].date || 0) - (a[1].date || 0));
+      container.innerHTML = list.map(([id, m]) => `
+        <div class="message-card">
+          <div class="msg-head">
+            <div>
+              <div class="msg-name">${m.name || 'Anonymous'}</div>
+              <div class="msg-email">${m.email || ''}</div>
+            </div>
+            <div class="msg-date">${m.date ? new Date(m.date).toLocaleString() : ''}</div>
+          </div>
+          <div class="msg-body">${m.message || ''}</div>
+        </div>
+      `).join('');
+    }
+
+    // ===== INIT SIDEBAR STATE ON LOAD =====
+    if (window.innerWidth >= 1024) {
+      sidebar.classList.add('open');
+    }
+  </script>
+</body>
+</html>
